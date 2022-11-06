@@ -108,9 +108,21 @@ async function getURLbyBucketKey(Bucket, Region, Prefix) {
       }
     });
     try {
+      // promise.all写法
+      //   const res = await Promise.all(asyncTask);
+      //   if (res) {
+      //     return res;
+      //   }
+      // promise.allSettled写法
       const res = await Promise.allSettled(asyncTask);
       if (res) {
-        return res;
+        const urlList = [];
+        res.forEach((item) => {
+          if (item.value) {
+            urlList.push(item.value);
+          }
+        });
+        return urlList;
       }
     } catch (error) {
       console.log(error);
