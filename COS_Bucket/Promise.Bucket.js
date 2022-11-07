@@ -1,4 +1,7 @@
-// Promise异步封装存储桶工具函数 ESM规范
+const Bucket = "test-1313270013";
+const Region = "ap-nanjing";
+
+// Promise异步封装存储桶工具函数
 const COS = require("cos-js-sdk-v5");
 var cos = new COS({
   // getAuthorization 必选参数
@@ -14,10 +17,10 @@ var cos = new COS({
     xhr.onload = function (e) {
       try {
         var data = JSON.parse(e.target.responseText);
-        console.log(data);
+        // console.log(data);
         var credentials = data.data.credentials;
       } catch (e) {
-        console.log(e);
+        // console.log(e);
       }
       if (!data || !credentials) {
         return console.error(
@@ -38,11 +41,22 @@ var cos = new COS({
 });
 
 /**
+ * 字符串分割获取文件后缀
+ * @param {String} fileName
+ * @returns {String} 文件类型
+ */
+function getTypeByfileName(fileName) {
+  const fileType = fileName.split(".").slice(-1).toLowerCase();
+  console.log("文件类型", fileType);
+  return fileType;
+}
+
+/**
  * 异步封装 获取存储桶列表
  * @param {String} Prefix
  * @returns {Promise}  resolve 存储桶数据
  */
-function COS_getBucket(Bucket, Region, Prefix) {
+function COS_getBucket(Prefix) {
   return new Promise((resolve, reject) => {
     cos.getBucket(
       {
@@ -67,7 +81,7 @@ function COS_getBucket(Bucket, Region, Prefix) {
  * @param {String} fileKey
  * @returns {Promise} resolve 可访问URL
  */
-function COS_getObjectUrl(Bucket, Region, fileKey) {
+function COS_getObjectUrl(fileKey) {
   return new Promise((resolve, reject) => {
     cos.getObjectUrl(
       {
@@ -87,7 +101,6 @@ function COS_getObjectUrl(Bucket, Region, fileKey) {
   });
 }
 
-// 2022/11/6 16:55 修复异步任务return错误的问题 By:SCY
 /**
  * 根据参数获取指定前缀文件夹下的存储对象URL
  * @param {String} Bucket  存储桶名称
@@ -95,25 +108,18 @@ function COS_getObjectUrl(Bucket, Region, fileKey) {
  * @param {查询前缀} Prefix
  * @returns {Array} 文件URL数组
  */
-async function getURLbyBucketKey(Bucket, Region, Prefix) {
-  // 配置参数
+async function getURLbyBucketKey( Prefix) {
   try {
-    const KeyList = await COS_getBucket(Bucket, Region, Prefix);
+    const KeyList = await COS_getBucket(Prefix);
     const asyncTask = [];
     // 工厂创建获取URL的promise
     KeyList.forEach((item) => {
       if (item.Size !== "0") {
-        const aTask = COS_getObjectUrl(Bucket, Region, item.Key);
+        const aTask = COS_getObjectUrl(item.Key);
         asyncTask.push(aTask);
       }
     });
     try {
-      // promise.all写法
-      //   const res = await Promise.all(asyncTask);
-      //   if (res) {
-      //     return res;
-      //   }
-      // promise.allSettled写法
       const res = await Promise.allSettled(asyncTask);
       if (res) {
         const urlList = [];
@@ -124,6 +130,10 @@ async function getURLbyBucketKey(Bucket, Region, Prefix) {
         });
         return urlList;
       }
+      // const res = await Promise.all(asyncTask)
+      // if (res) {
+      //   return res
+      // }
     } catch (error) {
       console.log(error);
       return error;
@@ -134,4 +144,11 @@ async function getURLbyBucketKey(Bucket, Region, Prefix) {
   }
 }
 
-export { getURLbyBucketKey };
+export {
+  getURLbyBucketKey,
+  COS_getBucket,
+  COS_getObjectUrl,
+  getTypeByfileName,
+  Bucket,
+  Region,
+};
