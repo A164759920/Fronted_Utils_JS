@@ -19,3 +19,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - name: npm init
+        run: npm install
+      - name: SFC init
+        run: npm install -g serverless-cloud-framework@latest/sfc 
+      - name: env injected
+        env:
+          TENCENT_SECRET_ID: ${{SCF_KEYS.ACCESSID}}
+          TENCENT_SECRET_KEY: ${{SCF_KEYS.ACCESSKEY}}
+        run: sfc config add --TENCENT_SECRET_ID ${{SCF_KEYS.ACCESSID}} --TENCENT_SECRET_KEY ${{SCF_KEYS.ACCESSKEY}} -a default -f
+      - name: build
+        run: sfc deploy
