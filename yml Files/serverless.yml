@@ -1,0 +1,13 @@
+component: website #组件类型
+name: vue #组件名称
+app: ROADRUNNER-WEB #应用名称
+
+inputs:
+  name: scfdemo
+  src:
+    src: ./src
+    hook: npm run build
+    dist: ./dist
+  region: ap-nanjing
+  # bucketName: ROADRUNNER-WEB
+  protocol: https
